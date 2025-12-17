@@ -3,6 +3,7 @@ from PIL import Image, ImageTk
 import sqlite3
 from tkinter import ttk, messagebox
 import os
+from reportlab.pdfgen import canvas
 
 
 class viewResultClass:
@@ -23,6 +24,9 @@ class viewResultClass:
 #---------------------------variables--------------------------
         self.var_search = StringVar()
         self.var_id = ""
+        self.var_roll=StringVar()
+        self.var_name=StringVar()
+        self.var_course=StringVar()
 
 #----------------------------search------------------------------
         lbl_search = Label(self.root, text="Search By Roll No.", font=(
@@ -67,9 +71,15 @@ class viewResultClass:
                         "times new roman", 15, "bold"), bg="white", bd=2, relief=GROOVE)
         self.per.place(x=900, y=280, width=150, height=50)
 
+#-------------------------------------buttons-----------------------------------------
 
         btn_delete = Button(self.root, text="Delete", font = ("times new roman", 15, "bold"),
-                            bg="#f44336", fg="white", cursor="hand2", command=self.delete).place(x=500, y=350, width=150, height=35)
+                            bg="#f44336", fg="white", cursor="hand2", command=self.delete).place(x=420, y=350, width=150, height=40)
+        
+        self.btn_report = Button(self.root, text="Generate Report",
+                               font=("times new roman", 15, "bold"),
+                               bg="#4caf50", fg="white", cursor="hand2", command=self.report)
+        self.btn_report.place(x=620, y=350, width=150, height=40)
         
 #------------------------------------functions------------------------------------
 
@@ -125,6 +135,35 @@ class viewResultClass:
                         self.clear()
         except Exception as ex:
             messagebox.showerror("Error", f"Error due to {str(ex)}")
+
+    def report(self):
+        con = sqlite3.connect(database="rms.db")
+        cur = con.cursor()
+        try:
+            if self.var_id=="":
+                messagebox.showerror("Error", "Please select a student", parent=self.root)
+            else:
+                cur.execute("select * from result where rid=?",(self.var_id,))
+                row=cur.fetchone()
+                if row==None:
+                    messagebox.showerror("Error", "No record found", parent=self.root)
+                else:
+                    c = canvas.Canvas(f"{row[1]}_{row[2]}_{row[3]}.pdf")
+                    c.rect(30, 450, 520, 320)
+                    c.setFont("Times-Bold", 30)
+                    c.drawCentredString(330, 720, "STUDENT REPORT CARD")
+                    c.setFont("Times-Roman", 15)
+                    c.drawString(50, 650, f"Roll Number: {row[1]}")
+                    c.drawImage("images\logo_p.png", 40, 690, width=70, height=70, preserveAspectRatio=True)
+                    c.drawString(50, 620, f"Name: {row[2]}")
+                    c.drawString(50, 590, f"Course: {row[3]}")
+                    c.drawString(50, 560, f"Marks Obtained: {row[4]}")
+                    c.drawString(50, 530, f"Full Marks: {row[5]}")
+                    c.drawString(50, 500, f"Percentage: {row[6]}%")
+                    c.save()
+                    messagebox.showinfo("Success", f"Report generated successfully: {row[1]}_{row[2]}_{row[3]}.pdf", parent=self.root)
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error due to : {str(ex)}")
 
 
 if __name__ == "__main__":
