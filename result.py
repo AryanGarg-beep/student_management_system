@@ -20,23 +20,24 @@ class ResultClass:
                       bg="#033054", fg="white").place(x=0, y=0, relwidth=1, height=55)
 
 #---------------------------variables--------------------------
-        self.var_select=StringVar()
+        self.var_roll=StringVar()
         self.var_name=StringVar()
         self.var_course=StringVar()
         self.var_marks_ob=StringVar()
         self.var_full_marks=StringVar()
+        self.var_search=StringVar()
         self.roll_list = []
         self.fetch_roll()
 
 
 #---------------------------widgets----------------------------
-        lbl_select = Label(self.root, text="Select Student",
+        lbl_roll = Label(self.root, text="Roll number",
                            font=("times new roman", 15),
                            bg="white").place(x=10, y=100)
         lbl_name = Label(self.root, text="Name",
                            font=("times new roman", 15),
                            bg="white").place(x=10, y=160)
-        lbl_course = Label(self.root, text="course",
+        lbl_course = Label(self.root, text="Course",
                            font=("times new roman", 15),
                            bg="white").place(x=10, y=220)
         lbl_marks_ob = Label(self.root, text="Marks Obtained",
@@ -47,25 +48,21 @@ class ResultClass:
                             bg="white").place(x=10, y=340)
         
 
-        self.txt_select = ttk.Combobox(self.root, textvariable=self.var_select,
-                                  values=self.roll_list,
-                                  font=("times new roman", 15),
-                                  state='readonly')
-        self.txt_select.place(x=280, y=100, width=200)
-        self.txt_select.set("Select")
-
-        self.btn_add = Button(self.root, text="search",
-                               font=("times new roman", 15, "bold"),
-                               bg="#2196f3", fg="white", cursor="hand2", command=self.search)
-        self.btn_add.place(x=500, y=100, width=100, height=30)
-        
-        txt_name = Entry(self.root, textvariable=self.var_name,
+        self.txt_roll = Entry(self.root, textvariable=self.var_roll,
                        font=("times new roman", 15),
-                       bg="lightyellow").place(x=280, y=160, width=320)
+                       bg="lightyellow")
+        self.txt_roll.place(x=280, y=100, width=320)
+
         
-        txt_course = Entry(self.root, textvariable=self.var_course,
+        self.txt_name = Entry(self.root, textvariable=self.var_name,
+                       font=("times new roman", 15),
+                       bg="lightyellow")
+        self.txt_name.place(x=280, y=160, width=320)
+
+        self.txt_course = Entry(self.root, textvariable=self.var_course,
                           font=("times new roman", 15),
-                          bg="lightyellow").place(x=280, y=220, width=320)
+                          bg="lightyellow")
+        self.txt_course.place(x=280, y=220, width=320)
         
         txt_marks_ob = Entry(self.root, textvariable=self.var_marks_ob,
                             font=("times new roman", 15),
@@ -74,6 +71,11 @@ class ResultClass:
         txt_full_marks = Entry(self.root, textvariable=self.var_full_marks,
                              font=("times new roman", 15),
                              bg="lightyellow").place(x=280, y=340, width=320)
+
+
+        txt_search_courseName = Entry(self.root, textvariable=self.var_search,
+                                     font=("times new roman", 15),
+                                     bg="lightyellow").place(x=750, y=72, width=280)
         
 #-----------------------------buttons---------------------------
         self.btn_submit = Button(self.root, text="Submit",
@@ -85,15 +87,63 @@ class ResultClass:
                                 bg="#607d8b", fg="white", cursor="hand2", command=self.clear)
         self.btn_clear.place(x=420, y=400, width=110, height=40)
 
-#-----------------------------picture----------------------------
-        self.bg_img = Image.open("images/result.jpg")
-        self.bg_img = self.bg_img.resize((500, 350), Image.Resampling.LANCZOS)
-        self.bg_img = ImageTk.PhotoImage(self.bg_img)
+        self.btn_add = Button(self.root, text="search",
+                               font=("times new roman", 15, "bold"),
+                               bg="#2196f3", fg="white", cursor="hand2", command=self.search)
+        self.btn_add.place(x=1070, y=70, width=100, height=30)
+#-----------------------------content------------------------------
+
+        self.C_Frame = Frame(self.root, bd=2, relief=RIDGE)
+        self.C_Frame.place(x=720, y=130, width=470, height=340)
+
+        scrolly = Scrollbar(self.C_Frame, orient=VERTICAL)
+        scrollx = Scrollbar(self.C_Frame, orient=HORIZONTAL)
+        self.courseTable=ttk.Treeview(self.C_Frame, columns=("roll", "name", "course"), xscrollcommand=scrollx.set, yscrollcommand=scrolly.set)
+        scrollx.pack(side=BOTTOM, fill=X)
+        scrolly.pack(side=RIGHT, fill=Y)
+        scrollx.config(command=self.courseTable.xview)
+        scrolly.config(command=self.courseTable.yview)
+
+        self.courseTable.heading("roll", text="Roll No.")
+        self.courseTable.heading("name", text="Name")
+        self.courseTable.heading("course", text="Course")
+
+        self.courseTable["show"]="headings"
+        self.courseTable.pack(fill=BOTH, expand=1)
+        self.courseTable.bind("<ButtonRelease-1>", self.get_data)
+
+        self.courseTable.column("roll", width=100)
+        self.courseTable.column("name", width=100)
+        self.courseTable.column("course", width=100)
+        self.show()
         
-        self.lbl=Label(self.root, image=self.bg_img).place(x=630, y=100)
 
 
-    
+#-----------------------------functions------------------------------------
+
+    def get_data(self, ev):
+        self.txt_roll.config(state='readonly')
+        r = self.courseTable.focus()
+        content = self.courseTable.item(r)
+        row = content["values"]
+        self.var_roll.set(row[0]),
+        self.var_name.set(row[1]),
+        self.var_course.set(row[2])
+
+
+    def show(self):
+        con = sqlite3.connect(database="rms.db")
+        cur = con.cursor()
+        try:
+            cur.execute("select roll, name, course from student")
+            rows = cur.fetchall()
+            self.courseTable.delete(*self.courseTable.get_children())
+            for row in rows:
+                self.courseTable.insert('', END, values=row)
+        except Exception as ex:
+            messagebox.showerror("Error", f"Error due to {str(ex)}")
+
+
     def fetch_roll(self):
         con = sqlite3.connect(database="rms.db")
         cur = con.cursor()
@@ -111,22 +161,22 @@ class ResultClass:
         con = sqlite3.connect(database="rms.db")
         cur = con.cursor()
         try:
-            cur.execute(f"select name, course from student where roll LIKE '%{self.var_select.get()}%'")
-            rows=cur.fetchone()
-            if rows!=None:
-                self.var_name.set(rows[0])
-                self.var_course.set(rows[1])
-            else:
-                messagebox.showerror("Error", "No record found", parent=self.root)
+            cur.execute(f"select roll, name, course from student where roll LIKE '%{self.var_search.get()}%' OR name LIKE '%{self.var_search.get()}%'")
+            rows=cur.fetchall()
+            self.courseTable.delete(*self.courseTable.get_children())
+            for row in rows:
+                self.courseTable.insert('', END, values=row)
         except Exception as ex:
             messagebox.showerror("Error", f"Error due to : {str(ex)}")
 
     def clear(self):
-        self.var_select.set("Select")
+        self.var_roll.set("Select")
         self.var_name.set("")
         self.var_course.set("")
         self.var_marks_ob.set("")
         self.var_full_marks.set("")
+        self.var_search.set("")
+        self.search()
 
     def add(self):
         con = sqlite3.connect(database="rms.db")
@@ -135,7 +185,7 @@ class ResultClass:
             if self.var_name.get()=="":
                 messagebox.showerror("Error", "Please select a student", parent=self.root)
             else:
-                cur.execute("select * from result where roll=? and course=?", (self.var_select.get(), self.var_course.get()))
+                cur.execute("select * from result where roll=? and course=?", (self.var_roll.get(), self.var_course.get()))
                 row=cur.fetchone()
                 if row!=None:
                     messagebox.showerror("Error", "result already present", parent=self.root)
@@ -143,7 +193,7 @@ class ResultClass:
                     per = round((int(self.var_marks_ob.get()) / int(self.var_full_marks.get())) * 100, 3) 
 
                     cur.execute("insert into result (roll,name ,course ,marks_ob, full_marks ,per) values(?,?,?,?,?,?)",(
-                        self.var_select.get(),
+                        self.var_roll.get(),
                         self.var_name.get(),
                         self.var_course.get(),
                         self.var_marks_ob.get(),

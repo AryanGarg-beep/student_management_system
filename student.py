@@ -216,18 +216,6 @@ class StudentClass:
         
 #----------------------------functions--------------------------
 
-        #self.var_roll=StringVar()
-        #self.var_name=StringVar()
-        #self.var_email=StringVar()
-        #self.var_gender=StringVar()
-        #self.var_state=StringVar()
-        #self.var_city=StringVar()
-        #self.var_pin=StringVar()
-        #self.var_dob=StringVar()
-        #self.var_course=StringVar()
-        #self.var_admission=StringVar()
-        #self.var_contact=StringVar()
-
     def get_data(self, ev):
         self.txt_roll.config(state='readonly')
         r = self.courseTable.focus()
