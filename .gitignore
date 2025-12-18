@@ -2,3 +2,5 @@ _pycache_/
 *.pyc
 *.db
 *.pdf
+rms.db
+clock.py

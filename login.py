@@ -18,12 +18,11 @@ class LoginClass:
         right_lbl = Label(self.root, bg="#031F3C").place(
             x=600, y=0, relwidth=1, relheight=1)
 
-# ===============frames===============
-
+#---------------------------login frame---------------------------
         login_frame = Frame(self.root, bg="white").place(
             x=250, y=100, width=800, height=500)
 
-        # ....title........
+#---------------------------title-----------------------------
         title = Label(login_frame, text="Login Here",  font=(
             "goudy old sytle", 30, "bold"), bg="white", fg="#08A3D2").place(x=500, y=150)
 
@@ -39,7 +38,7 @@ class LoginClass:
             "goudy old sytle", 20), bg="lightgray")
         self.txt_password.place(x=480, y=400, width=350, height=35)
 
-        # =========Button==================
+#----------------------buttons-----------------------------
         self.btn_reg = Button(self.root, text='Register New Account', font=("goudy old style", 15, "bold"),
                               bg="white", bd=0, fg="#B00857", cursor="hand2", command=self.register_window).place(
             x=460, y=450, width=250, height=20)
@@ -47,7 +46,7 @@ class LoginClass:
                                 bg="#B00857", bd=1, fg="white", cursor="hand2", command=self.login).place(
             x=480, y=500, width=120, height=60)
 
-        # ==============images====================================
+#---------------------------image-----------------------------
 
         self.bg_img = Image.open("images/side.png")
         self.bg_img = self.bg_img.resize((500, 500), Image.Resampling.LANCZOS)
