@@ -122,6 +122,12 @@ class RMS:
         
         self.update_details()
 
+
+        self.btn_refresh = Button(self.root, text="↻",
+                               font=("times new roman", 15, "bold"),
+                               bg="#4caf50", fg="white", cursor="hand2", command=self.update_details)
+        self.btn_refresh.place(x=20, y=15, width=20, height=20)
+
 #----------------------------functions--------------------------
 
 
